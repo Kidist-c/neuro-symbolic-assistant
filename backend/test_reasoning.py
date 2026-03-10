@@ -1,21 +1,24 @@
-# test_reasoning.py
+# test_metta_engine.py
 from backend.metta_engine import MettaEngine
 
-# Initialize Metta engine
-engine = MettaEngine()
+# Initialize engine
+engine = MettaEngine(dataset_path="backend/dataset.metta", rules_path="backend/rule.metta")
 
-# Query examples
-chandler_children = engine.query("(child $x Chandler)", chain_type="match")
-bob_grandparents = engine.query("(grandparent $x Bob)", chain_type="backward")
-all_grandparents = engine.query("(grandparent $x $y)", chain_type="forward")
-tim_cousins = engine.query("(cousin $x Tim)", chain_type="forward")
-chandler_siblings = engine.query("(sibling $x Chandler)", chain_type="forward")
-eve_uncles = engine.query("(uncle $x Eve)", chain_type="forward")
+# Test queries
+queries = [
+    "Who are Chandler's children?",
+    "Who are Bob's grandparents?",
+    "Who are Tim's cousins?",
+    "Who are Chandler's siblings?",
+    "Who are Eve's uncles?"
+]
 
-# Print results
-print("Chandler's children:", chandler_children)
-print("Bob's grandparents:", bob_grandparents)
-print("All grandparent facts:", all_grandparents)
-print("Tim's cousins:", tim_cousins)
-print("Chandler's siblings:", chandler_siblings)
-print("Eve's uncles:", eve_uncles)
+for q in queries:
+    print(f"\nQuestion: {q}")
+    # Backward chaining
+    backward_result = engine.query(q, chain_type="backward")
+    print("Backward chain result:", backward_result)
+
+    # Forward chaining
+    forward_result = engine.query(q, chain_type="forward")
+    print("Forward chain result:", forward_result)
