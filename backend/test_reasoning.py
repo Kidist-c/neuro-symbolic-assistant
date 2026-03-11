@@ -1,26 +1,21 @@
-from backend.metta_engine import MettaEngine
+from hyperon import MeTTa
 
+metta = MeTTa()
 
-def run_tests():
-    engine = MettaEngine()
+# load reasoning engine
+with open("backend/kb.metta") as f:
+    metta.run(f.read())
 
-    questions = [
-        "Who are Chandler's children?",
-        "Who are Bob's grandparents?",
-        "Who are Tim's cousins?",
-        "Who are Chandler's siblings?",
-        "Who are Eve's uncles?"
-    ]
+# load rules
+with open("backend/rule.metta") as f:
+    metta.run(f.read())
 
-    print("\n===== METTA ENGINE TEST =====\n")
+# load dataset
+with open("backend/dataset.metta") as f:
+    metta.run(f.read())
 
-    for q in questions:
-        print(f"Question: {q}")
+print("Running test query...")
 
-        result = engine.query(q)
+result = metta.run("!(forward-chain &kb (fromNumber 4) (: FACT1 (has_parent John Mary)))")
 
-        print(f"Answer: {result}\n")
-
-
-if __name__ == "__main__":
-    run_tests()
+print(result)
