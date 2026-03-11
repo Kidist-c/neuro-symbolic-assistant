@@ -1,15 +1,15 @@
-import google.generativeai as genai
+from google import genai
 import os
 import json
+from dotenv import load_dotenv
 
+load_dotenv()
 
 # --------------------------------------------------
-# Configure Gemini API
+# Configure Gemini API (New SDK)
 # --------------------------------------------------
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-model = genai.GenerativeModel("gemini-1.5-flash")
+client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
 
 # --------------------------------------------------
@@ -37,7 +37,6 @@ def ask_llm(question: str):
         }
     """
 
-    # Professional structured prompt
     prompt = f"""
 You are an intelligent assistant in a Hybrid Neuro-Symbolic AI system.
 
@@ -62,24 +61,24 @@ Return your response STRICTLY in this JSON format:
 """
 
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
+        )
 
         raw_text = response.text.strip()
 
-        # Attempt to parse JSON safely
         try:
             parsed = json.loads(raw_text)
             return parsed
 
         except json.JSONDecodeError:
-            # If model returns non-JSON text, wrap it safely
             return {
                 "answer": raw_text,
                 "reasoning": "The response could not be parsed as JSON, so the raw model output was returned."
             }
 
     except Exception as e:
-        # Handle API errors or connection failures
         return {
             "answer": "An error occurred while generating the response.",
             "reasoning": f"LLM request failed due to: {str(e)}"
