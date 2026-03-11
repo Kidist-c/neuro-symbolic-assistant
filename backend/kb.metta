@@ -1,54 +1,38 @@
-;; ---------- CREATE KNOWLEDGE BASE ----------
+;; Define cast functions between Nat and Number
 
+(= (fromNumber $n) (if (<= $n 0) Z (S (fromNumber (- $n 1)))))
+
+;; Knowledge base
 !(bind! &kb (new-space))
+                     
+!(add-reduct &kb (superpose ((get-atoms &temp1))))
+!(add-reduct &kb (superpose ((get-atoms &temp2))))
 
-;; ---------- LOAD FACTS ----------
-!(add-reduct &kb
-    (superpose (
-        (Parent Chandler Pam)
-        (Parent Chandler Adem)
-        (Parent Chandler Jane)
+;; Base case
+(= (backward-chain $kb $_ (: $prf $ccln)) (match $kb (: $prf $ccln) (: $prf $ccln)))
 
-        (Parent Monica John)
-        (Parent Monica Pam)
-        (Parent Monica Adem)
-        (Parent Monica Jane)
+;; Recursive step
+(= (backward-chain $kb (S $k) (: ($prfabs $prfarg) $ccln))
+   (let* (((: $prfabs (-> $prms $ccln)) (backward-chain $kb $k (: $prfabs (-> $prms $ccln))))
+          ((: $prfarg $prms) (backward-chain $kb $k (: $prfarg $prms))))
+     (: ($prfabs $prfarg) $ccln)))
 
-        (Parent John Bob)
+;; Forward DTL Curried
+(: forward-chain (-> $a                            ; Knowledge base space
+           Nat                           ; Maximum depth
+           $b                            ; Source
+           $b))                          ; Conclusion
 
-        (Parent Pam Tim)
-        (Parent Pam Kim)
+;; Base case
+(= (forward-chain $kb $_ (: $prf $prms)) (: $prf $prms))
 
-        (Parent Adam Eve)
+;; Recursive step
+(= (forward-chain $kb (S $k) (: $prfarg $prms))
+   (let (: $prfabs (-> $prms $ccln)) (backward-chain $kb $k (: $prfabs (-> $prms $ccln)))
+     (forward-chain $kb $k (: ($prfabs $prfarg) $ccln))))
+(= (forward-chain $kb (S $k) (: $prfabs (-> $prms $ccln)))
+    (let (: $prfarg $prms) (backward-chain $kb $k (: $prfarg $prms))
+     (forward-chain $kb $k (: ($prfabs $prfarg) $ccln))))
 
-        (Parent Jane Joe)
 
-        (Male Chandler)
-        (Male John)
-        (Male Bob)
-        (Male Joe)
-        (Male Tim)
-        (Male Adam)
-
-        (Female Pam)
-        (Female Monica)
-        (Female Kim)
-        (Female Eve)
-        (Female Jane)
-    ))
-)
-
-;; ---------- LOAD RULES ----------
-!(add-reduct &kb
-    (superpose (
-        child-rule
-        sibling-rule
-        grandparent-rule
-        greatgrandparent-rule
-        grandfather-rule
-        grandmother-rule
-        uncle-rule
-        aunt-rule
-        cousin-rule
-    ))
-)
+!(forward-chain &kb (fromNumber 2) (: FACT1 (has_parent John Mary)))
