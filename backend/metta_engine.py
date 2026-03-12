@@ -8,9 +8,9 @@ class MettaEngine:
         self.metta = MeTTa()
 
         base_dir = os.path.dirname(__file__)
-        kb = open(os.path.join(base_dir,"metta/kb.metta")).read()
-        rules = open(os.path.join(base_dir,"metta/rules.metta")).read()
-        dataset = open(os.path.join(base_dir,"metta/dataset.metta")).read()
+        kb = open(os.path.join(base_dir,"kb.metta")).read()
+        rules = open(os.path.join(base_dir,"rule.metta")).read()
+        dataset = open(os.path.join(base_dir,"dataset.metta")).read()
         self.metta.run(kb)
         self.metta.run(rules)
         self.metta.run(dataset)
