@@ -4,6 +4,8 @@ from pydantic import BaseModel
 from select_reasoning import decide_reasoning
 from neural_engine import ask_llm
 from metta_engine import MettaEngine
+from fastapi.middleware.cors import CORSMiddleware
+
 
 # --------------------------------------------------
 # Initialize FastAPI
@@ -14,6 +16,13 @@ app = FastAPI(
     description="Hybrid system combining symbolic reasoning (MeTTa) and neural LLM reasoning",
     version="1.0"
 )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # --------------------------------------------------
 # Initialize symbolic engine (loads KB once)
 # --------------------------------------------------
