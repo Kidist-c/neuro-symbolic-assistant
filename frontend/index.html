@@ -2,72 +2,136 @@
 <html>
 <head>
     <title>Neuro-Symbolic Assistant</title>
-
     <style>
         body {
-            font-family: Arial;
-            background:#f5f5f5;
-            text-align:center;
-            padding:40px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            text-align: center;
+            padding: 40px;
+            margin: 0;
         }
-
+        h1 {
+            color: #333;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
         input {
-            width:400px;
-            padding:10px;
+            width: 400px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
-
         button {
-            padding:10px 20px;
-            cursor:pointer;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin-left: 10px;
         }
-
+        button:hover {
+            background-color: #0056b3;
+        }
         #result {
-            margin-top:30px;
-            background:white;
-            padding:20px;
-            border-radius:8px;
-            width:600px;
-            margin-left:auto;
-            margin-right:auto;
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+        .answer {
+            font-size: 18px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .reasoning {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .meta {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        pre {
+            background: #eee;
+            padding: 10px;
+            overflow-x: auto;
         }
     </style>
 </head>
-
 <body>
+    <h1>Hybrid Neuro-Symbolic Assistant</h1>
+    <div class="input-group">
+        <input id="question" type="text" placeholder="Ask a question..." />
+        <button onclick="askQuestion()">Ask</button>
+    </div>
+    <div id="result"></div>
 
-<h1>Hybrid Neuro-Symbolic Assistant</h1>
+    <script>
+        async function askQuestion() {
+            const question = document.getElementById('question').value.trim();
+            if (!question) {
+                alert('Please enter a question.');
+                return;
+            }
 
-<input id="question" placeholder="Ask a question..." />
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Loading...</p>';
 
-<button onclick="askQuestion()">Ask</button>
+            try {
+                const response = await fetch('http://127.0.0.1:8000/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: question })
+                });
 
-<div id="result"></div>
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error (${response.status}): ${errorText}`);
+                }
 
-<script>
+                const data = await response.json();
 
-async function askQuestion() {
+                // Format the display
+                let html = '<h3>Answer</h3>';
 
-    const question = document.getElementById("question").value
+                // If the result contains an answer field (neural) or we have a symbolic result
+                if (data.result && typeof data.result === 'object') {
+                    // Neural or symbolic explained result
+                    html += `<div class="answer">${data.result.answer || 'No answer provided'}</div>`;
+                    if (data.result.reasoning) {
+                        html += `<div class="reasoning"><strong>Reasoning:</strong> ${data.result.reasoning}</div>`;
+                    }
+                } else {
+                    // Fallback for raw symbolic output
+                    html += `<div class="answer">${JSON.stringify(data.result)}</div>`;
+                }
 
-    const response = await fetch("http://127.0.0.1:8000/ask",{
-        method:"POST",
-        headers:{
-            "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-            question:question
-        })
-    })
+                html += `<div class="meta">
+                    <strong>Reasoning type:</strong> ${data.reasoning_type}<br>
+                    <strong>Query used:</strong> <code>${data.query}</code>
+                </div>`;
 
-    const data = await response.json()
-
-    document.getElementById("result").innerHTML = `
-        <h3>Answer</h3>
-        <p>${JSON.stringify(data,null,2)}</p>
-    `
-}
-
-</script>
-
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+    </script>
 </body>
 </html>
