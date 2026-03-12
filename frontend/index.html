@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Neuro-Symbolic Assistant</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background:#f5f5f5;
+            text-align:center;
+            padding:40px;
+        }
+
+        input {
+            width:400px;
+            padding:10px;
+        }
+
+        button {
+            padding:10px 20px;
+            cursor:pointer;
+        }
+
+        #result {
+            margin-top:30px;
+            background:white;
+            padding:20px;
+            border-radius:8px;
+            width:600px;
+            margin-left:auto;
+            margin-right:auto;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Hybrid Neuro-Symbolic Assistant</h1>
+
+<input id="question" placeholder="Ask a question..." />
+
+<button onclick="askQuestion()">Ask</button>
+
+<div id="result"></div>
+
+<script>
+
+async function askQuestion() {
+
+    const question = document.getElementById("question").value
+
+    const response = await fetch("http://127.0.0.1:8000/ask",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+            question:question
+        })
+    })
+
+    const data = await response.json()
+
+    document.getElementById("result").innerHTML = `
+        <h3>Answer</h3>
+        <p>${JSON.stringify(data,null,2)}</p>
+    `
+}
+
+</script>
+
+</body>
+</html>
